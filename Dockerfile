@@ -8,7 +8,7 @@ RUN apk add --no-cache maven
 
 # Directorio de trabajo
 WORKDIR /app
-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
+
 # Copia los archivos necesarios para la compilación
 # Ya que no incluyes 'target/' en Git, copiamos el código fuente (src) y pom.xml
 COPY pom.xml .
