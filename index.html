@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Reserva de Aulas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+        }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            padding: 2rem 0;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .nav-pills .nav-link {
+            border-radius: 10px;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .nav-pills .nav-link.active {
+            background: var(--primary-color);
+        }
+        .table {
+            background: white;
+            border-radius: 10px;
+        }
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+        .modal-content {
+            border-radius: 15px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .login-container {
+            max-width: 450px;
+            margin: 100px auto;
+        }
+        .user-info {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            color: white;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pantalla de Login/Registro -->
+<div id="authContainer" class="container">
+    <div class="login-container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><i class="bi bi-building"></i> Sistema de Reserva de Aulas</h3>
+            </div>
+            <div class="card-body">
+                <!-- Tabs Login/Registro -->
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">
+                            <i class="bi bi-person-plus"></i> Registrarse
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Login -->
+                    <div class="tab-pane fade show active" id="login">
+                        <form id="formLogin" onsubmit="event.preventDefault(); login();">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="loginEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="loginPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                        </form>
+                    </div>
+
+                    <!-- Registro -->
+                    <div class="tab-pane fade" id="register">
+                        <form id="formRegister" onsubmit="event.preventDefault(); registrar();">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="registerNombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="registerEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="registerPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rol</label>
+                                <select class="form-select" id="registerRol" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="ROLE_PROFESOR">Profesor</option>
+                                    <option value="ROLE_ADMIN">Administrador</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Aplicación Principal (oculta hasta login) -->
+<div id="appContainer" class="container main-container hidden">
+    <div class="text-center mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="user-info">
+                <i class="bi bi-person-circle"></i>
+                <span id="userEmail"></span>
+                <span id="userRole" class="badge bg-light text-dark ms-2"></span>
+            </div>
+            <div>
+                <h1 class="text-white mb-2"><i class="bi bi-building"></i> Sistema de Reserva de Aulas</h1>
+                <p class="text-white-50">Gestiona aulas, horarios y reservas de forma eficiente</p>
+            </div>
+            <button class="btn btn-light" onclick="cerrarSesion()" title="Cerrar Sesión">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+        </div>
+        <div class="mt-2">
+            <small class="text-white-50">
+                <i class="bi bi-server"></i> Servidor: <span id="urlActual">http://localhost:8080</span>
+            </small>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills justify-content-center mb-4" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="aulas-tab" data-bs-toggle="pill" data-bs-target="#aulas" type="button">
+                <i class="bi bi-door-open"></i> Aulas
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="horarios-tab" data-bs-toggle="pill" data-bs-target="#horarios" type="button">
+                <i class="bi bi-clock"></i> Horarios
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reservas-tab" data-bs-toggle="pill" data-bs-target="#reservas" type="button">
+                <i class="bi bi-calendar-check"></i> Reservas
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="mainTabsContent">
+        <!-- TAB AULAS -->
+        <div class="tab-pane fade show active" id="aulas" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-door-open"></i> Gestión de Aulas</h4>
+                        <button class="btn btn-light" id="btnNuevaAula" onclick="mostrarModalAula()">
+                            <i class="bi bi-plus-circle"></i> Nueva Aula
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <input type="number" class="form-control" id="filtroCapacidad" placeholder="Filtrar por capacidad mínima">
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="filtroOrdenadores">
+                                <option value="">Todos</option>
+                                <option value="true">Con ordenadores</option>
+                                <option value="false">Sin ordenadores</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="cargarAulas()">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Capacidad</th>
+                                <th>Ordenadores</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tablaAulas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB HORARIOS -->
+        <div class="tab-pane fade" id="horarios" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-clock"></i> Gestión de Horarios</h4>
+                        <button class="btn btn-light" id="btnNuevoHorario" onclick="mostrarModalHorario()">
+                            <i class="bi bi-plus-circle"></i> Nuevo Horario
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <i class="bi bi-info-circle"></i> <strong>Información:</strong>
+                        Los horarios son franjas horarias predefinidas que se utilizarán al crear reservas.
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Día Semana</th>
+                                <th>Hora Inicio</th>
+                                <th>Hora Fin</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tablaHorarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB RESERVAS -->
+        <div class="tab-pane fade" id="reservas" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-calendar-check"></i> Gestión de Reservas</h4>
+                        <button class="btn btn-light" onclick="mostrarModalReserva()">
+                            <i class="bi bi-plus-circle"></i> Nueva Reserva
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <i class="bi bi-info-circle"></i> <strong>Importante:</strong>
+                        Al crear una reserva debes seleccionar un horario ya existente.
+                        Solo puedes editar/eliminar tus propias reservas (excepto si eres ADMIN).
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Aula</th>
+                                <th>Fecha</th>
+                                <th>Motivo</th>
+                                <th>Asistentes</th>
+                                <th>Horario</th>
+                                <th>Creador</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tablaReservas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Aula -->
+<div class="modal fade" id="modalAula" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tituloModalAula">Nueva Aula</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAula">
+                    <input type="hidden" id="aulaId">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Aula</label>
+                        <input type="text" class="form-control" id="aulaNombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Capacidad</label>
+                        <input type="number" class="form-control" id="aulaCapacidad" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="aulaOrdenadores">
+                            <label class="form-check-label" for="aulaOrdenadores">
+                                Tiene ordenadores
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarAula()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Horario -->
+<div class="modal fade" id="modalHorario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tituloModalHorario">Nuevo Horario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formHorario">
+                    <input type="hidden" id="horarioId">
+                    <div class="mb-3">
+                        <label class="form-label">Día de la semana</label>
+                        <select class="form-select" id="horarioDiaSemana" required>
+                            <option value="">Seleccione...</option>
+                            <option value="LUNES">Lunes</option>
+                            <option value="MARTES">Martes</option>
+                            <option value="MIERCOLES">Miércoles</option>
+                            <option value="JUEVES">Jueves</option>
+                            <option value="VIERNES">Viernes</option>
+                            <option value="SABADO">Sábado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora de inicio (ej: 08:00)</label>
+                        <input type="time" class="form-control" id="horarioHoraInicio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora de fin (ej: 10:00)</label>
+                        <input type="time" class="form-control" id="horarioHoraFin" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarHorario()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reserva -->
+<div class="modal fade" id="modalReserva" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tituloModalReserva">Nueva Reserva</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertaReserva"></div>
+                <form id="formReserva">
+                    <input type="hidden" id="reservaId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Aula</label>
+                            <select class="form-select" id="reservaAula" required></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="reservaFecha" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo</label>
+                        <input type="text" class="form-control" id="reservaMotivo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número de Asistentes</label>
+                        <input type="number" class="form-control" id="reservaAsistentes" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Horario <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reservaHorario" required>
+                            <option value="">Cargando horarios...</option>
+                        </select>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Selecciona un horario existente.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarReserva()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let API_URL = 'http://localhost:8080';
+    let TOKEN = null;
+    let USER_EMAIL = null;
+    let USER_ROLE = null;
+
+    // ========== AUTENTICACIÓN ==========
+
+    async function login() {
+        try {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password})
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al iniciar sesión');
+            }
+
+            const data = await response.json();
+            TOKEN = data.token;
+
+            // Decodificar token para obtener info del usuario
+            const payload = JSON.parse(atob(TOKEN.split('.')[1]));
+            USER_EMAIL = payload.sub;
+            USER_ROLE = payload.roles;
+
+            // Guardar en localStorage
+            localStorage.setItem('token', TOKEN);
+            localStorage.setItem('userEmail', USER_EMAIL);
+            localStorage.setItem('userRole', USER_ROLE);
+
+            mostrarApp();
+            alert('¡Bienvenido!');
+        } catch (error) {
+            alert('Error al iniciar sesión: ' + error.message);
+        }
+    }
+
+    async function registrar() {
+        try {
+            const nombre = document.getElementById('registerNombre').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const rol = document.getElementById('registerRol').value;
+
+            const response = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nombre, email, password, rol})
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al registrarse');
+            }
+
+            alert('Usuario registrado correctamente. Ahora puedes iniciar sesión.');
+            document.getElementById('formRegister').reset();
+            document.getElementById('login-tab').click();
+        } catch (error) {
+            alert('Error al registrarse: ' + error.message);
+        }
+    }
+
+    function cerrarSesion() {
+        TOKEN = null;
+        USER_EMAIL = null;
+        USER_ROLE = null;
+        localStorage.clear();
+
+        document.getElementById('authContainer').classList.remove('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('formLogin').reset();
+    }
+
+    function mostrarApp() {
+        document.getElementById('authContainer').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+
+        document.getElementById('userEmail').textContent = USER_EMAIL;
+        document.getElementById('userRole').textContent = USER_ROLE;
+
+        // Configurar permisos según rol
+        configurarPermisos();
+
+        // Cargar datos
+        cargarAulas();
+        cargarHorarios();
+        cargarReservas();
+    }
+
+    function configurarPermisos() {
+        const esAdmin = USER_ROLE === 'ROLE_ADMIN';
+
+        // Solo ADMIN puede crear/editar/eliminar aulas y horarios
+        document.getElementById('btnNuevaAula').style.display = esAdmin ? 'block' : 'none';
+        document.getElementById('btnNuevoHorario').style.display = esAdmin ? 'block' : 'none';
+    }
+
+    function verificarAutenticacion() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            TOKEN = token;
+            USER_EMAIL = localStorage.getItem('userEmail');
+            USER_ROLE = localStorage.getItem('userRole');
+            mostrarApp();
+        }
+    }
+
+    // Headers con autenticación
+    function getHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TOKEN}`
+        };
+    }
+
+    // ========== AULAS ==========
+
+    async function cargarAulas() {
+        try {
+            const capacidad = document.getElementById('filtroCapacidad').value;
+            const ordenadores = document.getElementById('filtroOrdenadores').value;
+
+            let url = `${API_URL}/aulas`;
+            const params = new URLSearchParams();
+            if (capacidad) params.append('capacidad', capacidad);
+            if (ordenadores) params.append('esOrdenadores', ordenadores);
+            if (params.toString()) url += `?${params.toString()}`;
+
+            const response = await fetch(url, {
+                headers: getHeaders()
+            });
+
+            if (!response.ok) throw new Error('Error al cargar aulas');
+
+            const aulas = await response.json();
+            const esAdmin = USER_ROLE === 'ROLE_ADMIN';
+
+            const tbody = document.getElementById('tablaAulas');
+            tbody.innerHTML = aulas.map(aula => `
+                <tr>
+                    <td>${aula.id}</td>
+                    <td><strong>${aula.nombre}</strong></td>
+                    <td><span class="badge bg-info">${aula.capacidad} personas</span></td>
+                    <td>
+                        ${aula.esOrdenadores ?
+                '<span class="badge bg-success"><i class="bi bi-pc-display"></i> Sí</span>' :
+                '<span class="badge bg-secondary">No</span>'}
+                    </td>
+                    <td>
+                        ${esAdmin ? `
+                            <button class="btn btn-sm btn-warning" onclick="editarAula(${aula.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarAula(${aula.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        ` : '<span class="text-muted">Solo lectura</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            alert('Error al cargar aulas: ' + error.message);
+        }
+    }
+
+    function mostrarModalAula() {
+        document.getElementById('formAula').reset();
+        document.getElementById('aulaId').value = '';
+        document.getElementById('tituloModalAula').textContent = 'Nueva Aula';
+        new bootstrap.Modal(document.getElementById('modalAula')).show();
+    }
+
+    async function editarAula(id) {
+        try {
+            const response = await fetch(`${API_URL}/aulas/${id}`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar aula');
+
+            const aula = await response.json();
+
+            document.getElementById('aulaId').value = aula.id;
+            document.getElementById('aulaNombre').value = aula.nombre;
+            document.getElementById('aulaCapacidad').value = aula.capacidad;
+            document.getElementById('aulaOrdenadores').checked = aula.esOrdenadores;
+            document.getElementById('tituloModalAula').textContent = 'Editar Aula';
+
+            new bootstrap.Modal(document.getElementById('modalAula')).show();
+        } catch (error) {
+            alert('Error al cargar aula: ' + error.message);
+        }
+    }
+
+    async function guardarAula() {
+        try {
+            const id = document.getElementById('aulaId').value;
+            const aula = {
+                nombre: document.getElementById('aulaNombre').value,
+                capacidad: parseInt(document.getElementById('aulaCapacidad').value),
+                esOrdenadores: document.getElementById('aulaOrdenadores').checked
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/aulas/${id}` : `${API_URL}/aulas`;
+
+            const response = await fetch(url, {
+                method: method,
+                headers: getHeaders(),
+                body: JSON.stringify(aula)
+            });
+
+            if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalAula')).hide();
+                cargarAulas();
+                alert('Aula guardada correctamente');
+            } else {
+                throw new Error('Error al guardar aula');
+            }
+        } catch (error) {
+            alert('Error al guardar aula: ' + error.message);
+        }
+    }
+
+    async function eliminarAula(id) {
+        if (!confirm('¿Está seguro de eliminar esta aula?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/aulas/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (response.ok) {
+                cargarAulas();
+                alert('Aula eliminada correctamente');
+            } else {
+                throw new Error('Error al eliminar aula');
+            }
+        } catch (error) {
+            alert('Error al eliminar aula: ' + error.message);
+        }
+    }
+
+    // ========== HORARIOS ==========
+
+    async function cargarHorarios() {
+        try {
+            const response = await fetch(`${API_URL}/horarios`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar horarios');
+
+            const horarios = await response.json();
+            const esAdmin = USER_ROLE === 'ROLE_ADMIN';
+
+            const tbody = document.getElementById('tablaHorarios');
+            tbody.innerHTML = horarios.map(horario => `
+                <tr>
+                    <td>${horario.id}</td>
+                    <td><span class="badge bg-primary">${horario.diaSemana || '-'}</span></td>
+                    <td><span class="badge bg-success">${horario.horaInicio || '-'}</span></td>
+                    <td><span class="badge bg-danger">${horario.horaFin || '-'}</span></td>
+                    <td>
+                        ${esAdmin ? `
+                            <button class="btn btn-sm btn-warning" onclick="editarHorario(${horario.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarHorario(${horario.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        ` : '<span class="text-muted">Solo lectura</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            alert('Error al cargar horarios: ' + error.message);
+        }
+    }
+
+    function mostrarModalHorario() {
+        document.getElementById('formHorario').reset();
+        document.getElementById('horarioId').value = '';
+        document.getElementById('tituloModalHorario').textContent = 'Nuevo Horario';
+        new bootstrap.Modal(document.getElementById('modalHorario')).show();
+    }
+
+    async function editarHorario(id) {
+        try {
+            const response = await fetch(`${API_URL}/horarios/${id}`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar horario');
+
+            const horario = await response.json();
+            document.getElementById('horarioId').value = horario.id;
+            document.getElementById('horarioDiaSemana').value = horario.diaSemana || '';
+            document.getElementById('horarioHoraInicio').value = horario.horaInicio || '';
+            document.getElementById('horarioHoraFin').value = horario.horaFin || '';
+            document.getElementById('tituloModalHorario').textContent = 'Editar Horario';
+            new bootstrap.Modal(document.getElementById('modalHorario')).show();
+        } catch (error) {
+            alert('Error al cargar horario: ' + error.message);
+        }
+    }
+
+    async function guardarHorario() {
+        try {
+            const id = document.getElementById('horarioId').value;
+            const horario = {
+                id: id || undefined,
+                diaSemana: document.getElementById('horarioDiaSemana').value,
+                horaInicio: document.getElementById('horarioHoraInicio').value,
+                horaFin: document.getElementById('horarioHoraFin').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = `${API_URL}/horarios`;
+
+            const response = await fetch(url, {
+                method: method,
+                headers: getHeaders(),
+                body: JSON.stringify(horario)
+            });
+
+            if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalHorario')).hide();
+                cargarHorarios();
+                alert('Horario guardado correctamente');
+            } else {
+                const errorMsg = await response.text();
+                alert('Error al guardar horario: ' + errorMsg);
+            }
+        } catch (error) {
+            alert('Error al guardar horario: ' + error.message);
+        }
+    }
+
+    async function eliminarHorario(id) {
+        if (!confirm('¿Está seguro de eliminar este horario?')) return;
+        try {
+            const response = await fetch(`${API_URL}/horarios/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (response.ok) {
+                cargarHorarios();
+                alert('Horario eliminado correctamente');
+            } else {
+                const errorMsg = await response.text();
+                throw new Error(errorMsg || 'Error al eliminar horario');
+            }
+        } catch (error) {
+            alert('Error al eliminar horario: ' + error.message);
+        }
+    }
+
+    // ========== RESERVAS ==========
+
+    async function cargarReservas() {
+        try {
+            const response = await fetch(`${API_URL}/reservas`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar reservas');
+
+            const reservas = await response.json();
+            const esAdmin = USER_ROLE === 'ROLE_ADMIN';
+
+            const tbody = document.getElementById('tablaReservas');
+            tbody.innerHTML = reservas.map(reserva => {
+                const horarioInfo = reserva.horario ?
+                    `${reserva.horario.diaSemana} - ${reserva.horario.horaInicio} a ${reserva.horario.horaFin}` :
+                    'Sin horario';
+
+                const esCreador = reserva.usuariox && reserva.usuariox.email === USER_EMAIL;
+                const puedeEditar = esAdmin || esCreador;
+
+                return `
+                    <tr>
+                        <td>${reserva.id}</td>
+                        <td><strong>${reserva.aulaa ? reserva.aulaa.nombre : 'N/A'}</strong></td>
+                        <td>${new Date(reserva.fecha).toLocaleDateString('es-ES')}</td>
+                        <td>${reserva.motivo}</td>
+                        <td><span class="badge bg-primary">${reserva.asistentes}</span></td>
+                        <td><small class="text-muted">${horarioInfo}</small></td>
+                        <td><small>${reserva.usuariox ? reserva.usuariox.email : 'N/A'}</small></td>
+                        <td>
+                            ${puedeEditar ? `
+                                <button class="btn btn-sm btn-warning" onclick="editarReserva(${reserva.id})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarReserva(${reserva.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            ` : '<span class="text-muted">Sin permiso</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (error) {
+            alert('Error al cargar reservas: ' + error.message);
+        }
+    }
+
+    async function mostrarModalReserva() {
+        document.getElementById('formReserva').reset();
+        document.getElementById('reservaId').value = '';
+        document.getElementById('tituloModalReserva').textContent = 'Nueva Reserva';
+        document.getElementById('alertaReserva').innerHTML = '';
+
+        await cargarSelectAulas();
+        await cargarSelectHorarios();
+
+        new bootstrap.Modal(document.getElementById('modalReserva')).show();
+    }
+
+    async function cargarSelectAulas() {
+        try {
+            const response = await fetch(`${API_URL}/aulas`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar aulas');
+
+            const aulas = await response.json();
+            const select = document.getElementById('reservaAula');
+
+            select.innerHTML = '<option value="">Seleccione un aula</option>' +
+                aulas.map(aula => `<option value="${aula.id}">${aula.nombre} (Cap: ${aula.capacidad})</option>`).join('');
+        } catch (error) {
+            alert('Error al cargar aulas: ' + error.message);
+        }
+    }
+
+    async function cargarSelectHorarios() {
+        try {
+            const response = await fetch(`${API_URL}/horarios`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar horarios');
+
+            const horarios = await response.json();
+            const select = document.getElementById('reservaHorario');
+
+            if (horarios.length === 0) {
+                select.innerHTML = '<option value="">No hay horarios disponibles - Crea uno primero</option>';
+            } else {
+                select.innerHTML = '<option value="">Seleccione un horario</option>' +
+                    horarios.map(h => `<option value="${h.id}">${h.diaSemana} - ${h.horaInicio} a ${h.horaFin}</option>`).join('');
+            }
+        } catch (error) {
+            alert('Error al cargar horarios: ' + error.message);
+        }
+    }
+
+    async function editarReserva(id) {
+        try {
+            const response = await fetch(`${API_URL}/reservas/${id}`, {
+                headers: getHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar reserva');
+
+            const reserva = await response.json();
+
+            await cargarSelectAulas();
+            await cargarSelectHorarios();
+
+            document.getElementById('reservaId').value = reserva.id;
+            document.getElementById('reservaAula').value = reserva.aulaa?.id || '';
+            document.getElementById('reservaFecha').value = reserva.fecha;
+            document.getElementById('reservaMotivo').value = reserva.motivo;
+            document.getElementById('reservaAsistentes').value = reserva.asistentes;
+            document.getElementById('reservaHorario').value = reserva.horario?.id || '';
+            document.getElementById('tituloModalReserva').textContent = 'Editar Reserva';
+
+            new bootstrap.Modal(document.getElementById('modalReserva')).show();
+        } catch (error) {
+            alert('Error al cargar reserva: ' + error.message);
+        }
+    }
+
+    async function guardarReserva() {
+        try {
+            const id = document.getElementById('reservaId').value;
+            const aulaId = document.getElementById('reservaAula').value;
+            const horarioId = document.getElementById('reservaHorario').value;
+
+            if (!aulaId) {
+                mostrarAlertaReserva('Por favor seleccione un aula', 'warning');
+                return;
+            }
+
+            if (!horarioId) {
+                mostrarAlertaReserva('Por favor seleccione un horario existente', 'warning');
+                return;
+            }
+
+            const reserva = {
+                fecha: document.getElementById('reservaFecha').value,
+                motivo: document.getElementById('reservaMotivo').value,
+                asistentes: parseInt(document.getElementById('reservaAsistentes').value) || 0,
+                aulaa: { id: parseInt(aulaId) },
+                horario: { id: parseInt(horarioId) }
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/reservas/${id}` : `${API_URL}/reservas`;
+
+            const response = await fetch(url, {
+                method: method,
+                headers: getHeaders(),
+                body: JSON.stringify(reserva)
+            });
+
+            if (response.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('modalReserva')).hide();
+                cargarReservas();
+                alert('Reserva guardada correctamente');
+            } else {
+                const error = await response.text();
+                throw new Error(error || 'Error al guardar reserva');
+            }
+        } catch (error) {
+            mostrarAlertaReserva('Error al guardar reserva: ' + error.message, 'danger');
+        }
+    }
+
+    async function eliminarReserva(id) {
+        if (!confirm('¿Está seguro de eliminar esta reserva?')) return;
+
+        try {
+            const response = await fetch(`${API_URL}/reservas/${id}`, {
+                method: 'DELETE',
+                headers: getHeaders()
+            });
+            if (response.ok) {
+                cargarReservas();
+                alert('Reserva eliminada correctamente');
+            } else {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al eliminar reserva');
+            }
+        } catch (error) {
+            alert('Error al eliminar reserva: ' + error.message);
+        }
+    }
+
+    function mostrarAlertaReserva(mensaje, tipo) {
+        const alertaDiv = document.getElementById('alertaReserva');
+        alertaDiv.innerHTML = `
+            <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+    }
+
+    // ========== INICIALIZACIÓN ==========
+
+    document.addEventListener('DOMContentLoaded', function() {
+        verificarAutenticacion();
+    });
+</script>
+</body>
+</html>
+
