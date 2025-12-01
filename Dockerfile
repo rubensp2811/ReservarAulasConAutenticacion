@@ -13,6 +13,7 @@ WORKDIR /app
 # Ya que no incluyes 'target/' en Git, copiamos el código fuente (src) y pom.xml
 COPY pom.xml .
 COPY src /app/src
+COPY src/main/resources/application.properties /app/src/main/resources/application.properties
 
 # Compila el proyecto y genera el JAR
 RUN mvn clean package -DskipTests
