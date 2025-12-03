@@ -28,7 +28,7 @@
     </scm>
     <properties>
         <!-- Ajustado a 17 por compatibilidad con JDK locales que no soportan 21 -->
-        <java.version>17</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
