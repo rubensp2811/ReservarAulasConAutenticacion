@@ -63,7 +63,7 @@ public class AuthController {
 
             // Validar el rol
             String rol = registerRequest.rol();
-            if (!rol.equals("ROLE_ADMIN") && !rol.equals("ROLE_PROFESOR")) {
+                if (!rol.equals("ROLE_ADMIN") && !rol.equals("ROLE_PROFESOR")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "El rol debe ser 'ROLE_ADMIN' o 'ROLE_PROFESOR'"));
             }
