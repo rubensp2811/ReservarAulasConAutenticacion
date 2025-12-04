@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //Con esto le decimos que no guarde sesión, es necesario para aplicaciones REST que usan tokens (JWT) o autenticación básica, porque cada petición debe ser independiente y contener sus credenciales
                 .httpBasic(org.springframework.security.config.Customizer.withDefaults()); // Habilita autenticación básica con el nuevo método recomendado
 
+
         // Añade el filtro JWT solo para Bearer Token
         // Este filtro valida el token y pone los datos del usuario y sus roles en el contexto de seguridad
         // Así, Spring Security puede aplicar las reglas de acceso definidas arriba
