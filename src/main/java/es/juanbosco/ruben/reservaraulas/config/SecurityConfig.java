@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Permitir acceso a recursos estáticos y archivos públicos
+                        .requestMatchers("/static/**", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
                         // Rutas públicas (sin autenticación)
                         .requestMatchers("/auth/**").permitAll()
 
@@ -55,7 +57,6 @@ public class SecurityConfig {
                         // USUARIOS - Solo para consultas básicas
                         .requestMatchers("/usuarios/**").hasAnyRole("PROFESOR", "ADMIN")
 
-                        .requestMatchers("/").permitAll()
                         .anyRequest().authenticated()
 
                 )
