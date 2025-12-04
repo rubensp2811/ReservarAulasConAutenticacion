@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -29,12 +29,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                .csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Permitir acceso a recursos estáticos y archivos públicos
-                        .requestMatchers("/static/**", "/index.html", "/css/**", "/js/**", "/images/**").permitAll()
-                        // Rutas públicas (sin autenticación)
+                        // Permitir acceso PÚBLICO a recursos estáticos y frontend (sin popup de login)
+                        .requestMatchers("/", "/index.html", "/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+
+                        // Rutas públicas de autenticación (sin autenticación)
                         .requestMatchers("/auth/**").permitAll()
+
+                        // Rutas con Basic Auth - Solo para herramientas HTTP como Postman/curl
+                        .requestMatchers("/api/basic/**").authenticated()
 
                         // AULAS - Solo ADMIN puede crear, editar y eliminar
                         .requestMatchers(HttpMethod.GET, "/aulas/**").hasAnyRole("PROFESOR", "ADMIN")
@@ -58,27 +62,37 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios/**").hasAnyRole("PROFESOR", "ADMIN")
 
                         .anyRequest().authenticated()
-
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //Con esto le decimos que no guarde sesión, es necesario para aplicaciones REST que usan tokens (JWT) o autenticación básica, porque cada petición debe ser independiente y contener sus credenciales
-                .httpBasic(Customizer.withDefaults()); // Habilita autenticación básica con el nuevo método recomendado
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Habilita Basic Auth SOLO para rutas /api/basic/** (no se aplica a recursos estáticos)
+                .httpBasic(httpBasic -> httpBasic
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Solo solicitar Basic Auth si la ruta es /api/basic/**
+                            if (request.getRequestURI().startsWith("/api/basic/")) {
+                                response.addHeader("WWW-Authenticate", "Basic realm=\"Restricted\"");
+                                response.sendError(401, "Unauthorized");
+                            } else {
+                                // Para otras rutas protegidas, retornar 401 sin popup
+                                response.sendError(401, "Unauthorized");
+                            }
+                        })
+                );
 
-
-        // Añade el filtro JWT solo para Bearer Token
-        // Este filtro valida el token y pone los datos del usuario y sus roles en el contexto de seguridad
-        // Así, Spring Security puede aplicar las reglas de acceso definidas arriba
+        // Añade el filtro JWT ANTES de la autenticación básica
+        // El filtro JWT procesa tokens Bearer, y si no hay token JWT, permite que Basic Auth se ejecute
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // Permite todos los orígenes
+        configuration.setAllowedOriginPatterns(List.of("*")); // Permite todos los orígenes
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*")); // Permite todas las cabeceras, incluido Authorization
+        configuration.setAllowedHeaders(List.of("*")); // Permite todas las cabeceras, incluido Authorization
         configuration.setAllowCredentials(true); // Permite credenciales (cookies, headers de autenticación)
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // Expone el header Authorization
+        configuration.setExposedHeaders(List.of("Authorization")); // Expone el header Authorization
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
